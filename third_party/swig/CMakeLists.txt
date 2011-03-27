@@ -25,6 +25,12 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/swig/.svn")
     
 endif()
 
+if(WIN32)
+    message("Creating swigconfig.h")
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swigconfig.h.win32 ${CMAKE_CURRENT_SOURCE_DIR}/swig/Source/Include/swigconfig.h
+    )
+endif()
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
         PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/swig/Source/CParse"
