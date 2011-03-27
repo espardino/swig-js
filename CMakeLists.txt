@@ -53,4 +53,4 @@ add_subdirectory(third_party)
 
 add_subdirectory(src/swig)
 
-add_subdirectory(src/draft)
+# add_subdirectory(src/draft)
