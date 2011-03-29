@@ -51,7 +51,8 @@ extern "C" {
   Language *swig_cffi(void);
   Language *swig_uffi(void);
   Language *swig_r(void);
-  Language *swig_jsv8(void);
+  Language *swig_js_v8(void);
+//  Language *swig_js_fb(void);
 }
 
 struct swig_module {
@@ -91,7 +92,8 @@ static swig_module modules[] = {
   {"-tcl8", swig_tcl, 0},
   {"-uffi", swig_uffi, "Common Lisp / UFFI"},
   {"-xml", swig_xml, "XML"},
-  {"-jsv8", swig_jsv8, "JavaScript (V8)"},
+  {"-jsv8", swig_js_v8, "JavaScript (V8)"},
+//  {"-jsfb", swig_js_fb, "JavaScript (FireBreath)"},
   {NULL, NULL, NULL}
 };
 

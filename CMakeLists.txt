@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(swig-js)
 
+set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
+
 # Options:
 
 # set(TARGET_ARCHITECTURE "ia32" CACHE STRING "arm, ia32, x64, mips")
@@ -53,4 +55,4 @@ add_subdirectory(third_party)
 
 add_subdirectory(src/swig)
 
-# add_subdirectory(src/draft)
+add_subdirectory(src/Examples/jsv8)

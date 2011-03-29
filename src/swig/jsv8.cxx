@@ -19,13 +19,12 @@ static int treduce = SWIG_cparse_template_reduce(0);
 
 #include <ctype.h>
 #include <string.h>
-#include <limits.h>		/* for INT_MAX */
-
+#include <limits.h>
 #include <iostream>
 #include <conio.h>
 
 static const char *usage = "\
-                           JavaScript Options (available with -jsv8)\n\
+                           JavaScript Options (available with -js)\n\
                            ";
                            
 int JSV8_DOH_EndsWith(String* s, String* suffix) {
@@ -47,11 +46,13 @@ int JSV8_DOH_EndsWith(String* s, String* suffix) {
 
 #define EndsWith JSV8_DOH_EndsWith
 
+/**
+ * Creates a string that is used to define a class template instance.
+ */
 void JSV8_GetClassTemplStr(Node* classNode, String* out) {
     String* clazzName = Getattr(classNode, "name");
     Printv(out, clazzName, "_class_templ", NIL);
 }
-#define GetClassTemplStr JSV8_GetClassTemplStr
 
 class JavaScriptV8: public Language {
 private:
@@ -115,11 +116,11 @@ public:
     * validate_identifier()
     *
     * Is this a valid identifier in the scripting language?
+    *
     * js method names can include any combination of letters, numbers
     * and underscores. 
     *
     * --------------------------------------------------------------------- */
-
     virtual int validate_identifier(String *s) {
         char *c = Char(s);
         while (*c) {
@@ -129,41 +130,16 @@ public:
         }
         return 1;
     }
-    
-    /* ---------------------------------------------------------------------
-    * validate_const_name(char *name)
-    *
-    * Validate constant name.
-    * --------------------------------------------------------------------- */
-
-    char *validate_const_name(char *name, const char *reason) {
-        if (!name || name[0] == '\0')
-            return name;
-
-        if (isupper(name[0]))
-            return name;
-
-        if (islower(name[0])) {
-            name[0] = (char)toupper(name[0]);
-            Swig_warning(WARN_RUBY_WRONG_NAME, input_file, line_number, "Wrong %s name (corrected to `%s')\n", reason, name);
-            return name;
-        }
-
-        Swig_warning(WARN_RUBY_WRONG_NAME, input_file, line_number, "Wrong %s name %s\n", reason, name);
-
-        return name;
-    }
-    
 
     /* ---------------------------------------------------------------------
     * top()
+    *
     * TODO(019): set a better name wrapper attribute, s. Java
     * --------------------------------------------------------------------- */
-
     virtual int top(Node *n) {
 
         /**
-        * See if any Ruby module options have been specified as options
+        * See if any module options have been specified as options
         * to the %module directive.
         */
         Node *swigModule = Getattr(n, "module");
@@ -563,7 +539,7 @@ public:
         char* abstract_ = Char(abstract);
         
         String* clazz_templ = NewString("");
-        GetClassTemplStr(n, clazz_templ);
+        JSV8_GetClassTemplStr(n, clazz_templ);
                 
         char* define_class_templ = "v8::Persistent<v8::FunctionTemplate> %s;\n";
         char* create_class_templ = "\n%s = v8_create_class_template(\"%s\");\n";
@@ -616,7 +592,7 @@ public:
 
         String* memFuncInit = NewString("");
         String* clazz_templ = NewString("");
-        GetClassTemplStr(clazz, clazz_templ);
+        JSV8_GetClassTemplStr(clazz, clazz_templ);
 
         String* wrapper_name = NewString("");
         char* method_wrapper = "_wrap_%s_%s";
@@ -654,7 +630,7 @@ public:
         String* ctorInit = NewString("");  
         
         String* class_templ = NewString("");
-        GetClassTemplStr(clazz, class_templ); 
+        JSV8_GetClassTemplStr(clazz, class_templ); 
                 
         char* alloc_func_str = "_wrap_new_%s";
         String* alloc_func = NewString("");
@@ -670,19 +646,6 @@ public:
         Delete(ctorInit);
         
         return SWIG_OK;
-    }
-
-    virtual int copyconstructorHandler(Node *n) {
-        return Language::copyconstructorHandler(n);
-    }
-
-    /* ---------------------------------------------------------------------
-    * destructorHandler()
-    * -------------------------------------------------------------------- */
-
-    virtual int destructorHandler(Node *n) {
-        current = DESTRUCTOR;
-        return Language::destructorHandler(n);
     }
 
     /* ---------------------------------------------------------------------
@@ -715,7 +678,7 @@ public:
         
         // TODO(011): handle read_only by adding a throwing setter function
         char* v8_add_gettersetter = "v8_add_class_member_getters_setters(%s, \"%s\", %s, %s);\n";
-        GetClassTemplStr(clazz, v8_class_template);
+        JSV8_GetClassTemplStr(clazz, v8_class_template);
         Printf(varFuncInit, v8_add_gettersetter, v8_class_template, varName, wName_get, wName_set);
         
         Delete(v8_class_template);
@@ -730,92 +693,24 @@ public:
         return Language::membervariableHandler(n); 
     }
 
-    /* -----------------------------------------------------------------------
-    * staticmemberfunctionHandler()
-    *
-    * Wrap a static C++ function
-    * ---------------------------------------------------------------------- */
-
-    virtual int staticmemberfunctionHandler(Node *n) {
-        return Language::staticmemberfunctionHandler(n);
-    }
-
-    /* ----------------------------------------------------------------------
-    * memberconstantHandler()
-    *
-    * Create a C++ constant
-    * --------------------------------------------------------------------- */
-
-    virtual int memberconstantHandler(Node *n) {
-        return Language::memberconstantHandler(n);
-    }
-
-    /* ---------------------------------------------------------------------
-    * staticmembervariableHandler()
-    * --------------------------------------------------------------------- */
-
-    virtual int staticmembervariableHandler(Node *n) {
-        return Language::staticmembervariableHandler(n);
-    }
-
-
-    /* ------------------------------------------------------------
-    * director support
-    * ------------------------------------------------------------ */
-    virtual int classDirector(Node *n) {
-        return Language::classDirector(n);
-    }
-
-    virtual int classDirectorInit(Node *n) {
-        return Language::classDirectorInit(n);
-    }
-
-    virtual int classDirectorEnd(Node *n) {
-        return Language::classDirectorEnd(n);
-    }
-
-    virtual int classDirectorConstructor(Node *n) {
-        return Language::classDirectorConstructor(n);
-    }
-
-    virtual int classDirectorDefaultConstructor(Node *n) {
-        return Language::classDirectorDefaultConstructor(n);
-    }
-
-    virtual int classDirectorMethod(Node *n, Node *parent, String *super) {
-        return Language::classDirectorMethod(n, parent, super);
-    }
-
-    virtual int classDirectorConstructors(Node *n) {
-        return Language::classDirectorConstructors(n);
-    }
-
-    virtual int classDirectorMethods(Node *n) {
-        return Language::classDirectorMethods(n);
-    }
-
-    virtual int classDirectorDisown(Node *n) {
-        return Language::classDirectorDisown(n);
-    }
-
     String *runtimeCode() {
 
         String *s = NewString("");
         String *shead = Swig_include_sys("jsv8head.swg");
+
         if (!shead) {
             Printf(stderr, "*** Unable to open 'jsv8head.swg'\n");
         } else {
             Append(s, shead);
             Delete(shead);
         }
-        // TODO(016) implement jsv8errors.swg
-        //String *serrors = Swig_include_sys("jsv8errors.swg");
-        //if (!serrors) {
-        //    Printf(stderr, "*** Unable to open 'jsv8errors.swg'\n");
-        //} else {
-        //    Append(s, serrors);
-        //    Delete(serrors);
-        //}
+        String *serrors = Swig_include_sys("jsv8errors.swg");
+        if (!serrors) {
+            Printf(stderr, "*** Unable to open 'jsv8errors.swg'\n");
+        } else {
+            Append(s, serrors);
+            Delete(serrors);
+        }
         String *sapi = Swig_include_sys("jsv8api.swg");
         if (!sapi) {
             Printf(stderr, "*** Unable to open 'jsv8api.swg'\n");
@@ -846,7 +741,7 @@ public:
     virtual void main(int argc, char *argv[]) {
 
         /* Set location of SWIG library */
-        SWIG_library_directory("jsv8");
+        SWIG_library_directory("js/v8");
 
         /* Turn on cppcast mode */
         Preprocessor_define((DOH *) "SWIG_CPLUSPLUS_CAST", 0);
@@ -860,15 +755,15 @@ public:
         allow_overloading();
     }
     
-};				/* class JSV8 */
+};
 
 /* -----------------------------------------------------------------------------
 * swig_jsv8()    - Instantiate module
 * ----------------------------------------------------------------------------- */
 
-static Language *new_swig_jsv8() {
+static Language *new_swig_js_v8() {
     return new JavaScriptV8();
 }
-extern "C" Language *swig_jsv8(void) {
-    return new_swig_jsv8();
+extern "C" Language *swig_js_v8(void) {
+    return new_swig_js_v8();
 }

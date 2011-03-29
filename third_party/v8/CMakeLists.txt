@@ -22,28 +22,8 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/v8/.svn")
 endif()
 
 
-
-#
 # Prepare options for v8 scons build
 # ==================================
-
-# if(V8_SNAPSHOT)
-# set(v8_snapshot snapshot=on)
-# endif()
-
-# if(V8_OPROFILE)
-# set(v8_oprofile prof=on)
-# endif()
-
-# if(V8_GDBJIT)
-    # if(NOT WIN32)
-        # set(v8_gdbjit gdbjit=on)
-    # endif()
-# endif()
-
-#if(OFF)
-#set(v8_parallel_jobs "-j ${parallel_jobs}")
-#endif()
 
 if(NOT ${CMAKE_BUILD_TYPE} EQUAL "")
     string(TOLOWER ${CMAKE_BUILD_TYPE} v8mode)
@@ -53,13 +33,15 @@ endif()
 
 if(${v8mode} STREQUAL "debug")
     if(WIN32)
-        set(_V8_LIB ${CMAKE_CURRENT_SOURCE_DIR}/v8/v8_g.lib)
+        list(APPEND _V8_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/v8/v8.lib)
+        set(V8_DLL ${CMAKE_CURRENT_SOURCE_DIR}/v8/v8_g.dll)
     else()
         message(FATAL_ERROR "Not yet implemented: what is the output of v8 build under posix?")
     endif()
 elseif(${v8mode} STREQUAL "release")
     if(WIN32)
-        set(_V8_LIB ${CMAKE_CURRENT_SOURCE_DIR}/v8/v8.lib)
+        list(APPEND _V8_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/v8/v8.lib)
+        set(V8_DLL ${CMAKE_CURRENT_SOURCE_DIR}/v8/v8.dll)
     else()
         message(FATAL_ERROR "Not yet implemented: what is the output of v8 build under posix?")
     endif()
@@ -67,22 +49,31 @@ else()
     message(FATAL_ERROR "Illegal build mode for v8: ${v8mode}")
 endif()
 
+list(APPEND SCONS_ARGS mode=${v8mode} library=shared)
 
 if(MSVC90)
-    # HACK: default settings does not work for vc9 
-    set(SCONS_ARGS ${SCONS_ARGS} "env=\"PATH:%PATH%,INCLUDE:%INCLUDE%,LIB:%LIB%\"")
+    list(APPEND SCONS_ARGS env="PATH:%PATH%,INCLUDE:%INCLUDE%,LIB:%LIB%")
 endif()
-    
+
+if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/BUILD_V8)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BUILD_V8 "Blaaa")
+endif()
+
 add_custom_command(
-    OUTPUT BUILD_V8.rule
-    COMMAND ${Scons_EXECUTABLE} ${SCONS_ARGS} mode=${v8mode} verbose=on
-    COMMAND ${CMAKE_COMMAND} -E touch BUILD_V8.rule
-    COMMENT "Building v8 using scons:  ${Scons_EXECUTABLE} ${SCONS_ARGS} mode=${v8mode} verbose=on"
+    OUTPUT ${V8_DLL}
+    COMMAND ${Scons_EXECUTABLE} ${SCONS_ARGS} verbose=on
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/v8/ChangeLog
+    #COMMENT "Building v8 using scons:  ${Scons_EXECUTABLE} ${SCONS_ARGS} mode=${v8mode} verbose=on"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/v8
 )
 
-add_custom_target(v8 DEPENDS BUILD_V8.rule)
+add_custom_target(v8 ALL DEPENDS ${V8_DLL})
 
 set_target_properties(v8
-                      PROPERTIES FOLDER third_party
+        PROPERTIES FOLDER third_party
 )
+
+add_custom_command(TARGET v8 POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${V8_DLL} ${PROJECT_BINARY_DIR}/bin/)
+
+set (V8_LIBS ${_V8_LIBS} CACHE INTERNAL "" FORCE)
+set (V8_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v8 CACHE INTERNAL "" FORCE)

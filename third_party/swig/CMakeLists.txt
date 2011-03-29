@@ -32,6 +32,10 @@ if(WIN32)
     )
 endif()
 
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swigwarn.swg ${CMAKE_CURRENT_SOURCE_DIR}/swig/Lib/swigwarn.swg
+)
+
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
         PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/swig/Source/CParse"
                             "${CMAKE_CURRENT_SOURCE_DIR}/swig/Source/Include"
