@@ -21,7 +21,6 @@ Requirements
 ------------
 
  - git
- - flex/bison (in PATH)
  - svn (in PATH)
 
 
