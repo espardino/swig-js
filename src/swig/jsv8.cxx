@@ -21,12 +21,13 @@ static int treduce = SWIG_cparse_template_reduce(0);
 #include <string.h>
 #include <limits.h>
 #include <iostream>
-#include <conio.h>
+
+
 
 static const char *usage = "\
                            JavaScript Options (available with -js)\n\
                            ";
-                           
+/*                           
 int JSV8_DOH_EndsWith(String* s, String* suffix) {
     if (s == 0 || suffix == 0)
         return 0;
@@ -44,8 +45,10 @@ int JSV8_DOH_EndsWith(String* s, String* suffix) {
     return (strcmp(s_str, s_suffix) == 0);
 }
 
-#define EndsWith JSV8_DOH_EndsWith
+*/
 
+
+#define EndsWith(name,val) (Strcmp(Char(name) + Len(name) - 4, val)==0)
 /**
  * Creates a string that is used to define a class template instance.
  */

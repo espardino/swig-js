@@ -2,7 +2,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_command(
                OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/example_wrap.cxx
-               COMMAND ${SWIG_JS_EXECUTABLE} -jsv8 -c++ -debug-top 4 -o ${CMAKE_CURRENT_BINARY_DIR}/example_wrap.cxx -outdir ${CMAKE_CURRENT_BINARY_DIR} example.i > ${CMAKE_CURRENT_BINARY_DIR}/output.txt
+               COMMAND ${SWIG_JS_EXECUTABLE} -jsv8 -c++ -debug-top 4 -o ${CMAKE_CURRENT_BINARY_DIR}/example_wrap.cxx -outdir ${CMAKE_CURRENT_BINARY_DIR} -I${PROJECT_BINARY_DIR}/Lib -I${PROJECT_BINARY_DIR}/Lib/js/v8 example.i > ${CMAKE_CURRENT_BINARY_DIR}/output.txt
                COMMENT "${SWIG_JS_EXECUTABLE} -jsv8 -c++ -debug-top 4 -o ${CMAKE_CURRENT_BINARY_DIR}/example_wrap.cxx -outdir ${CMAKE_CURRENT_BINARY_DIR} example.i > ${CMAKE_CURRENT_BINARY_DIR}/output.txt"
                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )

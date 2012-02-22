@@ -9,9 +9,13 @@ include_directories(${SWIG_INCLUDES})
 
 add_executable(swig swigmain.cxx jsv8.cxx)
 
+if (UNIX)
 target_link_libraries(swig
-                      swig_cparse swig_preprocessor swig_doh swiglib swig_modules)
-
+                      swig_cparse swig_preprocessor swig_doh swiglib swig_modules libpcre.so)
+else()
+target_link_libraries(swig
+                      swig_cparse swig_preprocessor swig_doh swiglib swig_modules )
+endif()
 get_target_property(SWIG_EXE swig LOCATION)
 get_filename_component(SWIG_EXE_NAME ${SWIG_EXE} NAME)
 

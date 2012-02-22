@@ -17,7 +17,7 @@ void test1() {
 
     //        Handle<String> source = String::New("var bla = new Bla(); bla.bla(); bla.blupp(2);");
 //    Handle<String> source = String::New("var circle = new Circle(2.0); log('Hallo Welt!'); log(circle.area());");
-    Handle<String> source = String::New("var circle = new Circle(2.0); circle.x = 1.2;");
+    Handle<String> source = String::New("var circle = new Circle(2.0); circle.x = 1.2; console.log(circle.area());");
     // Compile the source code. 
     Handle<Script> script = Script::Compile(source);
 
